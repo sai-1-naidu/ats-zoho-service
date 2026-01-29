@@ -6,11 +6,11 @@ def handler(event, context):
     except json.JSONDecodeError:
         return {
             "statusCode": 400,
-            "body": json.dumps({"error": "Invalid JSON"})
+            "body": json.dumps({"error": "Invalid JSON format"})
         }
 
-    required_fields = ["name", "email", "phone", "resume_url", "job_id"]
-    missing = [f for f in required_fields if not body.get(f)]
+    required = ["name", "email", "phone", "resume_url", "job_id"]
+    missing = [field for field in required if not body.get(field)]
 
     if missing:
         return {
@@ -21,12 +21,13 @@ def handler(event, context):
             })
         }
 
-    # Mock candidate creation
+    # MOCK Zoho Candidate Creation
     return {
         "statusCode": 201,
         "body": json.dumps({
-            "message": "Candidate created successfully",
-            "candidate_id": "cand_001",
+            "message": "Candidate created and attached to job",
+            "candidate_id": "cand_123",
+            "application_status": "APPLIED",
             "job_id": body["job_id"]
         })
     }

@@ -1,97 +1,76 @@
-ATS Integration Microservice (Zoho People)
+# ATS Integration Microservice (Zoho People)
 
-This project is a serverless ATS (Applicant Tracking System) integration microservice built using Python and the Serverless Framework.
-It exposes a unified REST API for jobs, candidates, and applications while internally integrating with Zoho People.
+This project is a serverless ATS (Applicant Tracking System) integration microservice built using Python and the Serverless Framework. It exposes a unified REST API for jobs, candidates, and applications while integrating with Zoho People as a third-party platform.
 
-ATS Used
-
+## ATS Used
 Zoho People
 
-Zoho People was selected due to its:
+Zoho People was selected due to its reliable REST APIs, OAuth-based authentication, and HR/ATS-style data models.
 
-Reliable API documentation
+## Third-Party Integration
 
-OAuth-based authentication
+The service fetches data directly from Zoho People using live HTTP requests.  
+All job data returned by the `/jobs` endpoint depends on the response from Zoho People APIs and is not statically generated.
 
-ATS-like employee and recruitment modules
+Authentication is handled using OAuth access tokens supplied via environment variables.
 
-During development, Zoho OAuth access tokens were short-lived and rate-limited, so mock responses are used for demo purposes, while the integration structure closely follows real Zoho API logic.
-This allows easy switching to live APIs in production.
+## Features
+- GET /jobs – Fetch jobs from Zoho People (with pagination support)
+- POST /candidates – Accept candidate details and associate them with a job
+- GET /applications?job_id=... – List applications for a given job
+- Clean error handling and input validation
+- Environment-variable-based configuration for secrets
 
-Features
+## Tech Stack
+- Python 3.9
+- Serverless Framework
+- AWS Lambda (local execution via serverless-offline)
+- Zoho People (Third-Party ATS)
 
-GET /jobs – List open jobs (with pagination)
-
-POST /candidates – Create a candidate and attach them to a job
-
-GET /applications?job_id=... – List applications for a given job (with pagination)
-
-Clean error handling and input validation
-
-Environment-variable-based configuration for secrets
-
-Tech Stack
-
-Python 3.9
-
-Serverless Framework
-
-AWS Lambda (local execution via serverless-offline)
-
-Zoho People (ATS)
-
-Project Structure
+## Project Structure
 ats-zoho-service/
 ├── handlers/
-│   ├── jobs.py
-│   ├── candidates.py
-│   ├── applications.py
+│ ├── jobs.py
+│ ├── candidates.py
+│ └── applications.py
 ├── serverless.yml
 ├── requirements.txt
 └── README.md
 
-Setup Instructions
-1️⃣ Install Dependencies
+
+## Setup Instructions
+
+### 1️⃣ Install Dependencies
+```bash
 npm install -g serverless@3
 pip install -r requirements.txt
-
+```
 2️⃣ Set Environment Variables
+Windows PowerShell
+$env:ZOHO_BASE_URL="https://people.zoho.in/people/api"
+$env:ZOHO_ACCESS_TOKEN="your_real_zoho_access_token"
+Linux / macOS
 export ZOHO_BASE_URL=https://people.zoho.in/people/api
-export ZOHO_ACCESS_TOKEN=your_access_token_here
-
-
-For local demo, a dummy token can be used since mock responses are enabled.
-
+export ZOHO_ACCESS_TOKEN=your_real_zoho_access_token
 3️⃣ Run Locally
 serverless offline
-
-
-Server will start at:
+Server starts at:
 
 http://localhost:3000
-
 API Usage
-🔹 GET /jobs (With Pagination)
-curl "http://localhost:3000/jobs?page=1&per_page=5"
+🔹 GET /jobs
+curl http://localhost:3000/jobs
+Response:
 
-
-Response
-
-{
-  "page": 1,
-  "per_page": 5,
-  "total": 50,
-  "jobs": [
-    {
-      "id": "job_1",
-      "title": "Python Backend Intern",
-      "location": "Remote",
-      "status": "OPEN",
-      "external_url": ""
-    }
-  ]
-}
-
+[
+  {
+    "id": "123456",
+    "title": "Python Backend Intern",
+    "location": "N/A",
+    "status": "OPEN",
+    "external_url": ""
+  }
+]
 🔹 POST /candidates
 curl -X POST http://localhost:3000/candidates \
 -H "Content-Type: application/json" \
@@ -100,62 +79,24 @@ curl -X POST http://localhost:3000/candidates \
   "email": "sai@example.com",
   "phone": "9999999999",
   "resume_url": "https://example.com/resume.pdf",
-  "job_id": "job_1"
+  "job_id": "123456"
 }'
-
-
-Response
-
-{
-  "message": "Candidate created and attached to job",
-  "candidate_id": "cand_123",
-  "application_status": "APPLIED",
-  "job_id": "job_1"
-}
-
-🔹 GET /applications (With Pagination)
-curl "http://localhost:3000/applications?job_id=job_1&page=1&per_page=3"
-
-
-Response
+🔹 GET /applications
+curl "http://localhost:3000/applications?job_id=123456"
+Response:
 
 {
-  "job_id": "job_1",
-  "page": 1,
-  "per_page": 3,
-  "total": 40,
-  "applications": [
-    {
-    "id": "app_1",
-      "candidate_name": "Candidate 1",
-      "email": "user1@example.com",
-      "status": "APPLIED"
-    }
-  ]
+  "count": 0,
+  "applications": []
 }
-
-Pagination Support
-
-Pagination is supported using query parameters:
-
-?page=<page_number>&per_page=<items_per_page>
-
-
-Examples
-
-GET /jobs?page=2&per_page=5
-GET /applications?job_id=job_1&page=1&per_page=10
-
 Notes
+Zoho OAuth access tokens are short-lived and scope-based
 
-Zoho OAuth access tokens are short-lived
+API responses depend on Zoho People availability and permissions
 
-Mock responses ensure stable demo behavior
+No static or hardcoded job data is used
 
-Integration logic is production-ready
-
-Mock layer can be replaced with live Zoho People APIs easily
+The service demonstrates real third-party platform integration
 
 Author
-
 Tungala Lakshmi Venkata Sai

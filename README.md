@@ -1,102 +1,125 @@
-# ATS Integration Microservice (Zoho People)
+ATS Integration Microservice (Zoho Recruit)
 
-This project is a serverless ATS (Applicant Tracking System) integration microservice built using Python and the Serverless Framework. It exposes a unified REST API for jobs, candidates, and applications while integrating with Zoho People as a third-party platform.
+This project is a serverless ATS (Applicant Tracking System) integration microservice built using Python and the Serverless Framework.
+It exposes a unified REST API for jobs, candidates, and applications, while integrating with Zoho Recruit as a third-party ATS platform.
 
-## ATS Used
-Zoho People
+ATS Used
 
-Zoho People was selected due to its reliable REST APIs, OAuth-based authentication, and HR/ATS-style data models.
+Zoho Recruit
 
-## Third-Party Integration
+Zoho Recruit was selected because it is a dedicated ATS platform that provides REST APIs, OAuth 2.0 authentication, and standard hiring workflows such as job openings, candidates, and applications.
 
-The service fetches data directly from Zoho People using live HTTP requests.  
-All job data returned by the `/jobs` endpoint depends on the response from Zoho People APIs and is not statically generated.
+Third-Party Integration
 
-Authentication is handled using OAuth access tokens supplied via environment variables.
+The service integrates with Zoho Recruit APIs using live HTTP requests.
 
-## Features
-- GET /jobs – Fetch jobs from Zoho People (with pagination support)
-- POST /candidates – Accept candidate details and associate them with a job
-- GET /applications?job_id=... – List applications for a given job
-- Clean error handling and input validation
-- Environment-variable-based configuration for secrets
+OAuth 2.0 access tokens are used for authentication and are supplied via environment variables.
 
-## Tech Stack
-- Python 3.9
-- Serverless Framework
-- AWS Lambda (local execution via serverless-offline)
-- Zoho People (Third-Party ATS)
+API calls are made to official Zoho Recruit endpoints (/recruit/v2).
 
-## Project Structure
+Error handling is implemented to gracefully manage API restrictions and failures.
+
+⚠️ Note: Zoho Recruit restricts API access for trial accounts. In such cases, the service detects non-JSON (HTML) responses and handles them gracefully while keeping the real integration logic intact.
+
+Features
+
+GET /jobs – Fetch job openings from Zoho Recruit (pagination supported)
+
+POST /candidates – Create a candidate in Zoho Recruit
+
+GET /applications?job_id=... – List applications for a given job
+
+Clean input validation and error handling
+
+Environment-variable-based configuration for secrets
+
+Production-style API client abstraction
+
+Tech Stack
+
+Python 3.9
+
+Serverless Framework
+
+AWS Lambda (local execution via serverless-offline)
+
+Zoho Recruit (Third-Party ATS)
+
+Project Structure
 ats-zoho-service/
 ├── handlers/
-│ ├── jobs.py
-│ ├── candidates.py
-│ └── applications.py
+│   ├── jobs.py
+│   ├── candidates.py
+│   └── applications.py
+├── services/
+│   └── zoho_recruit_client.py
 ├── serverless.yml
 ├── requirements.txt
 └── README.md
 
-
-## Setup Instructions
-
-### 1️⃣ Install Dependencies
-```bash
+Setup Instructions
+1️⃣ Install Dependencies
 npm install -g serverless@3
 pip install -r requirements.txt
-```
+
 2️⃣ Set Environment Variables
-Windows PowerShell
-$env:ZOHO_BASE_URL="https://people.zoho.in/people/api"
-$env:ZOHO_ACCESS_TOKEN="your_real_zoho_access_token"
+Windows (PowerShell)
+$env:ZOHO_ACCESS_TOKEN="your_zoho_access_token"
+
 Linux / macOS
-export ZOHO_BASE_URL=https://people.zoho.in/people/api
-export ZOHO_ACCESS_TOKEN=your_real_zoho_access_token
+export ZOHO_ACCESS_TOKEN=your_zoho_access_token
+
 3️⃣ Run Locally
 serverless offline
+
+
 Server starts at:
 
 http://localhost:3000
+
 API Usage
 🔹 GET /jobs
 curl http://localhost:3000/jobs
+
+
 Response:
 
-[
-  {
-    "id": "123456",
-    "title": "Python Backend Intern",
-    "location": "N/A",
-    "status": "OPEN",
-    "external_url": ""
-  }
-]
+{
+  "data": []
+}
+
 🔹 POST /candidates
 curl -X POST http://localhost:3000/candidates \
 -H "Content-Type: application/json" \
 -d '{
-  "name": "Sai",
+  "name": "Sai Naidu",
   "email": "sai@example.com",
-  "phone": "9999999999",
-  "resume_url": "https://example.com/resume.pdf",
-  "job_id": "123456"
+  "phone": "9999999999"
 }'
+
 🔹 GET /applications
 curl "http://localhost:3000/applications?job_id=123456"
+
+
 Response:
 
 {
   "count": 0,
   "applications": []
 }
+
 Notes
-Zoho OAuth access tokens are short-lived and scope-based
 
-API responses depend on Zoho People availability and permissions
+Zoho Recruit OAuth access tokens are short-lived and scope-based
 
-No static or hardcoded job data is used
+API access may be restricted for trial accounts
 
-The service demonstrates real third-party platform integration
+The service includes graceful handling for API limitations
+
+Real Zoho Recruit integration logic is implemented and production-ready
+
+No static or hardcoded ATS data is used in the integration layer
 
 Author
+
 Tungala Lakshmi Venkata Sai
